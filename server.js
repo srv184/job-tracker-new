@@ -16,7 +16,7 @@ import morgan from "morgan";
 import helmet from "helmet";
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
-
+import cors from "cors";
 import cookieParser from "cookie-parser";
 
 // Parsers
@@ -26,7 +26,13 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1); //! for rateLimiter and COOKIES, to enable it when behind the reverse proxy (Heroku, Bluemix, etc)
 // The rateLimiter is used in the jobRoutes.js
-
+// CORS configuration
+// This is the domain of the frontend application hosted on Render
+const corsOptions = {
+  origin: "https://job-tracker-qvse.onrender.com", // frontend Render domain
+  credentials: true,
+};
+app.use(cors(corsOptions));
 // Importing routes
 import authRoutes from "./routes/auth-routes.js";
 import jobRoutes from "./routes/job-routes.js";
