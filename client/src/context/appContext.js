@@ -94,8 +94,11 @@ const AppProvider = ({ children }) => {
   const [state, dispatch] = useReducer(reducer, initialState);
 
   //! axios - global setup
-  const authFetch = axios.create({
+  /*const authFetch = axios.create({
     baseURL: "/api/v1",
+  });*/
+  const authFetch = axios.create({
+    baseURL: process.env.REACT_APP_API_BASE_URL + "/api/v1",
   });
 
   //! axios - request (not required after token has been stored in cookies)
