@@ -26,6 +26,7 @@ app.use(cookieParser());
 
 app.set("trust proxy", 1); //! for rateLimiter and COOKIES, to enable it when behind the reverse proxy (Heroku, Bluemix, etc)
 // The rateLimiter is used in the jobRoutes.js
+
 // CORS configuration
 // This is the domain of the frontend application hosted on Render
 const corsOptions = {
@@ -33,6 +34,8 @@ const corsOptions = {
   credentials: true,
 };
 app.use(cors(corsOptions));
+app.set("trust proxy", 1);
+
 // Importing routes
 import authRoutes from "./routes/auth-routes.js";
 import jobRoutes from "./routes/job-routes.js";
