@@ -24,17 +24,13 @@ app.use(express.urlencoded({ extended: false }));
 app.use(express.json());
 app.use(cookieParser());
 
-app.set("trust proxy", 1); //! for rateLimiter and COOKIES, to enable it when behind the reverse proxy (Heroku, Bluemix, etc)
-// The rateLimiter is used in the jobRoutes.js
+app.set("trust proxy", 1); // ✅ first
 
-// CORS configuration
-// This is the domain of the frontend application hosted on Render
 const corsOptions = {
-  origin: "https://job-tracker-qvse.onrender.com", // frontend Render domain
-  credentials: true,
+  origin: "https://job-tracker-qvse.onrender.com", // ✅ exact frontend origin
+  credentials: true, // ✅ allow cookies
 };
 app.use(cors(corsOptions));
-app.set("trust proxy", 1);
 
 // Importing routes
 import authRoutes from "./routes/auth-routes.js";
