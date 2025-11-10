@@ -11,28 +11,14 @@ mongoose.set("strictQuery", true);
 import "express-async-errors";
 import morgan from "morgan";
 
-// Secirity packages
-// import cors from "cors";
+// Security packages
 import helmet from "helmet";
 import xss from "xss-clean";
 import mongoSanitize from "express-mongo-sanitize";
 import cors from "cors";
 import cookieParser from "cookie-parser";
 
-// Parsers
-app.use(express.urlencoded({ extended: false }));
-app.use(express.json());
-app.use(cookieParser());
-
-app.set("trust proxy", 1); // ✅ first
-
-const corsOptions = {
-  origin: "https://job-tracker-qvse.onrender.com", // ✅ exact frontend origin
-  credentials: true, // ✅ allow cookies
-};
-app.use(cors(corsOptions));
-
-// Importing routes
+// Middleware
 import authRoutes from "./routes/auth-routes.js";
 import jobRoutes from "./routes/job-routes.js";
 import notFound from "./middleware/notFound.js";
@@ -42,38 +28,57 @@ import { fileURLToPath } from "url";
 
 const port = process.env.PORT || 9000;
 
-// Activate morgan
-if (process.env.NODE_ENV !== "production") {
-  app.use(morgan("dev"));
-}
+// Parsers
+app.use(express.urlencoded({ extended: false }));
+app.use(express.json());
+app.use(cookieParser());
 
-const __dirname = dirname(fileURLToPath(import.meta.url));
-// only when ready to deploy
-app.use(express.static(path.resolve(__dirname, "./client/build")));
+// Trust proxy for Render (required for cookies)
+app.set("trust proxy", 1);
+
+// CORS configuration for frontend
+const corsOptions = {
+  origin: "https://job-tracker-qvse.onrender.com", // exact frontend URL
+  credentials: true, // allow cookies to be sent
+};
+app.use(cors(corsOptions));
 
 // Security middleware
 app.use(helmet());
 app.use(xss());
 app.use(mongoSanitize());
 
-// Route middleware
+// Logging in dev
+if (process.env.NODE_ENV !== "production") {
+  app.use(morgan("dev"));
+}
+
+// API routes
 app.use("/api/v1/auth", authRoutes);
 app.use("/api/v1/jobs", authVerification, jobRoutes);
+
+// Serve frontend React build
+const __dirname = dirname(fileURLToPath(import.meta.url));
+app.use(express.static(path.resolve(__dirname, "./client/build")));
+app.use("*", (req, res) => {
+  res.sendFile(path.resolve(__dirname, "./client/build", "index.html"));
+});
+
+// Error handling middleware
 app.use(errorHandler);
 app.use(notFound);
 
+// Start server with MongoDB connection
 const start = async () => {
   try {
-    await mongoose
-      .connect(process.env.MONGO_URL)
-      .then(() => console.log("MONGODB connected!"))
-      .catch((err) => console.log(err));
+    await mongoose.connect(process.env.MONGO_URI); // ✅ ensure this matches your Render env
+    console.log("MongoDB connected!");
 
     app.listen(port, () => {
       console.log(`Server running on port ${port}`);
     });
   } catch (error) {
-    console.log(error);
+    console.error("Startup error:", error);
   }
 };
 
